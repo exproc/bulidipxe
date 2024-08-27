@@ -16,7 +16,7 @@ RUN apt-get install -y binutils-dev zip cron binutils-aarch64-linux-gnu binutils
 
 ## Prepare html
 RUN rm /usr/share/nginx/html/index.html
-COPY html/ /usr/share/nginx/html/
+#COPY html/ /usr/share/nginx/html/
 RUN mkdir /usr/share/nginx/html/bin
 
 ## Adding scripts and files
