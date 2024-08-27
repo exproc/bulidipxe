@@ -16,12 +16,12 @@ RUN apt-get install -y binutils-dev zip cron binutils-aarch64-linux-gnu binutils
 
 ## Prepare html
 RUN rm /usr/share/nginx/html/index.html
-ADD html/ /usr/share/nginx/html/
+COPY html/ /usr/share/nginx/html/
 RUN mkdir /usr/share/nginx/html/bin
 
 ## Adding scripts and files
-ADD config-backup /config-backup
-ADD renew.sh /renew.sh
+COPY config-backup /config-backup
+COPY renew.sh /renew.sh
 RUN chmod +x /renew.sh
 
 ## Copy Custom Nginx.conf to /etc/nginx
