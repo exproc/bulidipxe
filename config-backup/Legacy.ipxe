@@ -3,7 +3,7 @@
 # Variables are specified in boot.ipxe.cfg
 
 # Some menu defaults
-set menu-timeout 5000
+#set menu-timeout 5000
 set submenu-timeout ${menu-timeout}
 isset ${menu-default} || set menu-default exit
 set esc:hex 1b
