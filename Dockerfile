@@ -19,3 +19,8 @@ COPY usr/  /usr/share/nginx/html/
 
 ## Copy Custom Nginx.conf to /etc/nginx
 COPY nginx/ /etc/nginx/
+
+## Adding scripts and files
+COPY config-backup /config-backup
+COPY renew.sh /renew.sh
+RUN chmod +x /renew.sh
