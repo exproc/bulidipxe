@@ -6,10 +6,7 @@ echo BackUp files
 cp ipxe/src/config/branding.h /config-backup/
 cp ipxe/src/config/general.h /config-backup/
 cp ipxe/src/config/console.h /config-backup/
-echo "Editing branding.h"
-sed -i 's/#define\ PRODUCT_NAME\ ""/#define\ PRODUCT_NAME\ "iPXE\ project\ by\ cool"/' ipxe/src/config/branding.h
-sed -i 's/#define\ PRODUCT_SHORT_NAME\ "iPXE"/#define\ PRODUCT_SHORT_NAME\ "ipxe-latest"/' ipxe/src/config/branding.h
-sed -i 's/#define\ PRODUCT_TAG_LINE\ "Open\ Source\ Network\ Boot\ Firmware"/#define\ PRODUCT_TAG_LINE\ "by\ cool"/' ipxe/src/config/branding.h
+
 echo "Editing general.h"
 sed -i 's/#undef\tDOWNLOAD_PROTO_HTTPS/#define\ DOWNLOAD_PROTO_HTTPS/' ipxe/src/config/general.h
 sed -i 's/#undef\tDOWNLOAD_PROTO_FTP/#define\ DOWNLOAD_PROTO_FTP/' ipxe/src/config/general.h
