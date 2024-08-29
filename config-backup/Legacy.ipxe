@@ -155,8 +155,8 @@ set server_ip ${next-server}
 set nfs_path /data/libreelec
 set nfs-server ${next-server}
 set nfs-root /libreele
-kernel http://${server_ip}${nfs_path}/KERNEL || read void
-initrd http://${server_ip}${nfs_path}/SYSTEM || read void 
+kernel tftp://${server_ip}${nfs_path}/KERNEL || read void
+initrd tftp://${server_ip}${nfs_path}/SYSTEM || read void 
 imgargs KERNEL ip=dhcp boot=NFS=${nfs-server}:${nfs-root} disk=NFS=${nfs-server}:${nfs-root}/storage overlay 
 boot || read void
 
