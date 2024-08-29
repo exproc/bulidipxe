@@ -64,6 +64,9 @@ item --key l menu-live    Live environments...
 item --gap --             ------------------------- Tools and utilities ----------------------------
 item --key p pxelinux     Load PXELinux menu
 item --key r menu-recovery Recovery tools...
+item --gap --		  --------------------------------- MediaServer -------------------------------
+item menu-mediaserver	  LibreELEC-kody
+
 item --key d menu-diag    Diagnostics tools...
 item --key i menu-install Installers...
 item --gap --             ------------------------- Advanced options -------------------------------
@@ -138,6 +141,32 @@ iseq ${menu-default} menu-recovery && isset ${submenu-default} && goto menu-reco
 choose selected && goto ${selected} || goto start
 :menu-recovery-timed
 choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+
+###################### MediaServer MENU ################################
+
+:menu-mediaserver
+menu Media Server
+
+item LIBREELEC   Kodia-LIBREELEC
+
+:LIBREELEC     
+set server_ip ${next-server}
+set nfs_path /data/libreele
+set nfs-server ${next-server}
+set nfs-root /libreele
+kernel http://${server_ip}${nfs_path}/KERNEL || read void
+initrd http://${server_ip}${nfs_path}/SYSTEM || read void 
+imgargs KERNEL ip=dhcp boot=NFS=${nfs-server}:${nfs-root} disk=NFS=${nfs-server}:${nfs-root}/storage overlay 
+boot || read void
+
+item
+item --key 0x08 back Back to top menu...
+iseq ${menu-default} menu-mediaserver && isset ${submenu-default} && goto menu-mediaserver-timed ||
+choose selected && goto ${selected} || goto start
+:menu-mediaserver-timed
+choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
 
 ###################### DIAGNOSTICS MENU #############################
 
