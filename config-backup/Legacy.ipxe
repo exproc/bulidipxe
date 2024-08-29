@@ -152,7 +152,7 @@ item LIBREELEC   Kodia-LIBREELEC
 
 :LIBREELEC     
 set server_ip ${next-server}
-set nfs_path /data/libreele
+set nfs_path /data/libreelec
 set nfs-server ${next-server}
 set nfs-root /libreele
 kernel http://${server_ip}${nfs_path}/KERNEL || read void
