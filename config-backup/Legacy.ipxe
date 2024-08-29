@@ -1,9 +1,9 @@
 #!ipxe
-
+dhcp
 # Variables are specified in boot.ipxe.cfg
 
 # Some menu defaults
-#set menu-timeout 5000
+set menu-timeout 500000
 set submenu-timeout ${menu-timeout}
 isset ${menu-default} || set menu-default exit
 set esc:hex 1b
@@ -180,6 +180,7 @@ boot || read void
 menu Live environments 
 
 item clonzilla     Clonezilla live (Default settings, VGA 800x600)
+item clonzilla2     Clonezilla2
 
 item --key 0x08 back      Back to top menu...
 iseq ${menu-default} menu-live && isset ${submenu-default} && goto menu-live-timed ||
@@ -189,13 +190,20 @@ choose --timeout ${submenu-timeout} --default ${submenu-default} selected && got
 
 
 :clonzilla
-set server_ip 192.168.1.74
-set nfs_path /images/os/clonezilla-live
-kernel nfs://${server_ip}${nfs_path}/live/vmlinuz || read void
-initrd nfs://${server_ip}${nfs_path}/live/initrd.img || read void
-#imgargs vmlinuz  boot=live union=overlay username=user config components quiet noswap edd=on nomodeset enforcing=0 locales= keyboard-layouts= ocs_live_run="ocs-live-general" ocs_live_extra_param="" ocs_live_batch="no" vga=785 ip= net.ifnames=0  splash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 netboot=nfs nfsroot= netboot=nfs nfsroot=${server_ip}:${nfs_path}   || read void
-imgargs vmlinuz boot=live username=user union=overlay config components noswap edd=on nomodeset ocs_live_run="ocs-live-general" ocs_live_batch=no net.ifnames=0 nosplash noprompt netboot=nfs nfsroot= netboot=nfs nfsroot=${server_ip}:${nfs_path}  || read void
-
+set server_ip ${next-server}
+set nfs_path /data/clonezilla-live
+kernel http://${server_ip}${nfs_path}/live/vmlinuz || read void
+initrd http://${server_ip}${nfs_path}/live/initrd.img || read void
+#imgargs vmlinuz  boot=live union=overlay username=user config components quiet noswap edd=on nomodeset enforcing=0 locales= keyboard-layouts= ocs_live_run="ocs-live-general" ocs_live_extra_param="" ocs_live_batch="no" vga=785 ip= net.ifnames=0  splash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 netboot=nfs nfsroot=${server_ip}:${nfs_path}   || read void
+#imgargs vmlinuz nitrd=initrd.img boot=live union=overlay username=user config components  loglevel=0 noswap edd=on nomodeset enforcing=0 noeject locales= keyboard-layouts= ocs_live_run="ocs-live-general" ocs_live_extra_param="" ocs_live_batch="no" vga=788 ip= net.ifnames=0  nosplash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 fetch=http://${server_ip}${nfs_path}/filesystem.squashfs  || read void
+imgargs initrd=initrd.img  boot=live username=user union=overlay components noswap noprompt vga=788 keyboard-layouts=us locales=en_US.UTF-8 fetch=http://${server_ip}${nfs_path}/live/filesystem.squashfs
 boot || read void
 
 
+:clonzilla2
+set server_ip ${next-server}
+set nfs_path /data/clonezilla
+kernel http://${server_ip}${nfs_path}/vmlinuz || read void
+initrd http://${server_ip}${nfs_path}/initrd || read void 
+imgargs vmlinuz boot=live username=user union=overlay config components noswap edd=on nomodeset ocs_live_run="ocs-live-general" ocs_live_batch=no ocs_repository="nfs4://${server_ip}/partimag/" net.ifnames=0 nosplash noprompt fetch=http://${server_ip}${nfs_path}/filesystem.squashfs
+boot || read void
