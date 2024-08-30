@@ -1,122 +1,213 @@
 #!ipxe
-cpuid --ext 29 && set arch x64 || set arch x86
-cpuid --ext 29 && set archl amd64 || set archl i386
-cpair --foreground 7 0
-echo -n W
-cpair --foreground 2 0
-echo -n e
-cpair --foreground 3 0
-echo -n l
-cpair --foreground 4 0
-echo -n c
-cpair --foreground 5 0
-echo -n o
-cpair --foreground 6 0
-echo -n m
-cpair --foreground 1 0
-echo -n e
-cpair --foreground 7 0
-echo !
-cpair --foreground 6 0
-echo
+dhcp
+# Variables are specified in boot.ipxe.cfg
 
-sleep 3
+# Some menu defaults
+set menu-timeout 500000
+set submenu-timeout ${menu-timeout}
+isset ${menu-default} || set menu-default exit
+set esc:hex 1b
+set bold ${esc:string}[1m
+set orange ${esc:string}[33;0m
+set yellow ${esc:string}[33;1m
+set cyan ${esc:string}[36;1m
+set resetfg ${esc:string}[39m
+set resetbg ${esc:string}[49m
+set resetbold ${esc:string}[22m
+set reset ${esc:string}[0m
 
-cpair --foreground 3 0
-prompt --key 0x02 --timeout 5000 Press Ctrl-B for the iPXE command line... && shell ||
-cpair --foreground 4 0
-prompt --key 0x17 --timeout 5000 Press Ctrl-W for the Wireless connection... && goto wifi || goto nextstep
-:wifi
-cpair --foreground 7 0
-iwstat
-echo -n Enter netX interface from above (net0, net1, net2 etc): && read netiface
-iwlist
-echo Listing networks on ${netiface} if available...
-echo -n Enter WiFi SSID: && read ${netiface}/ssid
-echo -n Enter WiFi password: && read ${netiface}/key
-:nextstep
-dhcp || goto failed
-cpair --foreground 6 0
-echo Loading... && goto start-menu
+
+colour --rgb 0x00567a 1 ||
+colour --rgb 0x00567a 2 ||
+colour --rgb 0x00567a 4 ||
+colour --rgb 0x00567a 0 ||
+colour --rgb 0xff0000 0 ||
+cpair --foreground 7 --background 2 2 ||
+cpair --background 0 1 ||
+cpair --background 1 2 ||
+cpair --foreground 1 1 ||
+cpair --foreground 0 3 ||
+cpair --foreground 4 4 ||
+
+
+# Set graphics mode and configure colours
+console --x 800 --y 600 --picture http://${next-server}/riddick.png
+colour --basic 3 --rgb 0xffaa44 3
+cpair --foreground 0 --background 3 2
+cpair --foreground 3 3
+set chotkey ${bold}
+set cname ${orange}
+
+
+# Figure out if client is 64-bit capable
+#cpuid --ext 29 && set arch x86_64 || set arch x86
+#cpuid --ext 29 && set archb 64 || set archb 32
+#cpuid --ext 29 && set archl x86_64 || set archl i386
+
+cpuid --ext 29 && set arch x86_64 || set arch i386 echo ${platform} ${arch}
+
+:start
+#menu iPXE boot menu for ${manufacturer} ${product} (${archb}bit)	 on (${next-server})
+
+menu iPXE boot menu for ${manufacturer} ${product} ${platform} on (${next-server})
+
+item --gap --             ------------------------- Operating systems ------------------------------
+item --key f freedos      Boot FreeDOS from iSCSI
+item --key m msdos        Boot MS-DOS from iSCSI
+item --key u ubuntu       Boot Ubuntu from iSCSI
+item --key v vmware       Boot VMware ESXi from iSCSI
+item --key w windows7     Boot Windows 7 from iSCSI
+
+item --key w wds            WDS
+item   prmo         Boot In to PxeBoot-server
+item --key l menu-live    Live environments...
+item --gap --             ------------------------- Tools and utilities ----------------------------
+item --key p pxelinux     Load PXELinux menu
+item --key r menu-recovery Recovery tools...
+
+
+item --key d menu-diag    Diagnostics tools...
+item --key i menu-install Installers...
+item --gap --             ------------------------- Advanced options -------------------------------
+item --key c config       Configure settings
+item shell                Drop to iPXE shell
+item reboot               Reboot computer
+item poweroff             Power Off computer
+item
+item --key x exit         Exit iPXE and continue BIOS boot
+choose --timeout ${menu-timeout} --default ${menu-default} selected || goto cancel
+set menu-timeout 0
+goto ${selected}
+
+:cancel
+echo You cancelled the menu, dropping you to a shell
+
+:shell
+echo Type 'exit' to get the back to the menu
+shell
+set menu-timeout 0
+set submenu-timeout 0
+goto start
+
 :failed
-cpair --foreground 1 0
-echo Cannot estabilish connection... Are you online?
-cpair --foreground 7 0
-prompt --key 0x13 --timeout 5000 Press Ctrl-S to change settings... && config || goto tryagain
-:tryagain
-cpair --foreground 2 0
-echo Trying again... && goto nextstep
+echo Booting failed, dropping to shell
+goto shell
 
-:start-menu
-console --picture https://raw.githubusercontent.com/exproc/ipxe-backgrounds/main/riddick.png||
-set cls:hex 1b:5b:4a
-set cls ${cls:string}
-set space:hex 20:20
-set space ${space:string}
-set sp:hex 20
-set sp ${sp:string}
+:reboot
+reboot
 
-menu Welcome to the EFI Boot Menu. Booted in [ ${arch} ] mode because CPU arch is detected as [ ${archl} ]
-item --gap --            ---------------------------------------- Just a simple menu: -----------------------------------------
-	item xyz             ${space} netboot.xyz
-	item localboot	     ${space} Boot from local storage
-item --gap --            --------------------------------------------- iPXE Tools: --------------------------------------------
-	item view            ${space} Network setting
-	item config          ${space} Configure iPXE
-	item shell           ${space} iPXE shell
-	item reboot          ${space} Reboot
-  item poweroff        ${space} Power off
-	item exit            ${space} Exit
-isset ${target} && set timeout 0 || set timeout 20000
-choose --timeout ${timeout} --default ${target} target && goto ${target} || goto failed
-echo ${cls}
-goto start-menu
+:poweroff
+poweroff
 
-:xyz
-chain --autofree https://boot.netboot.xyz/ipxe/netboot.xyz.efi || goto failed
-
-:view
-isset ${memsize} && echo ${manufacturer} | ${product} | ${platform} | ${arch} | ${memsize} MiB || echo ${manufacturer} | ${product} | ${platform} | ${arch}
-echo -- ------------------------------------------------------------------------
-isset ${proxydhcp/filename} && echo The network settings obtained from the a proxyDHCP server || set man-flag 1
-#isset ${netX.dhcp/filename} && echo The network settings obtained from the a DHCP server || set man-flag 2
-isset ${netX.dhcp/dhcp-server} && echo The network settings obtained from the a DHCP server || set man-flag 3
-isset ${man-flag} || echo The network settings set manually
-echo
-echo ${ifname} is a  ${chip} ${pci/${busloc}.0.2}:${pci/${busloc}.2.2}
-echo mac  ${sp}: ${mac}
-echo ip  ${space}: ${ip}
-echo mask		 : ${netmask}
-echo gw  ${space}: ${gateway}
-echo dns    ${sp}: ${dns}
-echo tftp		 : ${next-server}
-echo dhcp		 : ${dhcp-server}
-echo http		 : ${boot-url}
-echo file		 : ${filename}
-echo
-prompt Press any key to back to the menu ...
-goto start-menu
+:exit
+exit
 
 :config
 config
+goto start
 
-:shell
-echo ${cls}
-echo Type "help" to get the list commands.
-echo Type "exit" to get the back to the menu.
-echo
-shell
-goto start-menu
+:back
+set submenu-timeout 0
+clear submenu-default
+goto start
 
-:reboot
-reboot --warm || goto failed
-goto start-menu
+############ MAIN MENU ITEMS ############
 
-:poweroff
-poweroff || goto failed
-goto start-menu
 
-:exit
-echo Continuing BIOS boot order...
-sleep 1
-exit 0
+:wds
+chain /Boot/pxeboot.0
+|| goto failed
+
+#PXEBOOT On OVH
+:prmo
+set 210:string tftp://192.168.2.58/
+chain ${210:string}ipxe.efi
+|| goto failed
+ 
+:pxelinux
+set 210:string tftp://${next-server}/bios/
+chain ${210:string}pxelinux.0 || goto failed
+goto start
+
+###################### RECOVERY MENU ################################
+
+:menu-recovery
+menu Recovery tools
+
+item
+item --key 0x08 back Back to top menu...
+iseq ${menu-default} menu-recovery && isset ${submenu-default} && goto menu-recovery-timed ||
+choose selected && goto ${selected} || goto start
+:menu-recovery-timed
+choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+
+
+###################### DIAGNOSTICS MENU #############################
+
+:menu-diag
+menu Diagnostic tools
+
+item --key 0x08 back Back to top menu...
+iseq ${menu-default} menu-diag && isset ${submenu-default} && goto menu-diag-timed ||
+choose selected && goto ${selected} || goto start
+:menu-diag-timed
+choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+############################ INSTALLER MENU #########################
+
+:menu-install
+menu Installers 
+
+item popos20     Install Pop Os 20
+
+
+
+item --key 0x08 back      Back to top menu...
+iseq ${menu-default} menu-install && isset ${submenu-default} && goto menu-install-timed ||
+choose selected && goto ${selected} || goto start
+:menu-install-timed
+choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+:popos20
+set server_ip ${next-server}
+set nfs_path /srv/nfs/popos20
+kernel nfs://${server_ip}${nfs_path}/casper/vmlinuz.efi || read void
+initrd nfs://${server_ip}${nfs_path}/casper/initrd.gz || read void
+imgargs vmlinuz.efi initrd=initrd.lz root=/dev/nfs boot=casper netboot=nfs nfsroot=${server_ip}:${nfs_path} ip=dhcp hostname=pop-os username=pop-os noprompt  --- || read void
+boot || read void
+
+
+###################### LIVE ENVIRONMENT MENU ########################
+
+:menu-live
+menu Live environments 
+
+item clonzilla     Clonezilla live (Default settings, VGA 800x600)
+item clonzilla2     Clonezilla2
+
+item --key 0x08 back      Back to top menu...
+iseq ${menu-default} menu-live && isset ${submenu-default} && goto menu-live-timed ||
+choose selected && goto ${selected} || goto start
+:menu-live-timed
+choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+
+:clonzilla
+set server_ip ${next-server}
+set nfs_path /data/clonezilla-live
+kernel http://${server_ip}${nfs_path}/live/vmlinuz || read void
+initrd http://${server_ip}${nfs_path}/live/initrd.img || read void
+#imgargs vmlinuz  boot=live union=overlay username=user config components quiet noswap edd=on nomodeset enforcing=0 locales= keyboard-layouts= ocs_live_run="ocs-live-general" ocs_live_extra_param="" ocs_live_batch="no" vga=785 ip= net.ifnames=0  splash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 netboot=nfs nfsroot=${server_ip}:${nfs_path}   || read void
+#imgargs vmlinuz nitrd=initrd.img boot=live union=overlay username=user config components  loglevel=0 noswap edd=on nomodeset enforcing=0 noeject locales= keyboard-layouts= ocs_live_run="ocs-live-general" ocs_live_extra_param="" ocs_live_batch="no" vga=788 ip= net.ifnames=0  nosplash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 fetch=http://${server_ip}${nfs_path}/filesystem.squashfs  || read void
+imgargs initrd=initrd.img  boot=live username=user union=overlay components noswap noprompt vga=788 keyboard-layouts=us locales=en_US.UTF-8 netboot=nfs nfsroot=${server_ip}:${nfs_path}
+boot || read void
+
+
+:clonzilla2
+set server_ip ${next-server}
+set nfs_path /data/clonezilla
+kernel http://${server_ip}${nfs_path}/vmlinuz || read void
+initrd http://${server_ip}${nfs_path}/initrd || read void 
+imgargs vmlinuz boot=live username=user union=overlay config components noswap edd=on nomodeset ocs_live_run="ocs-live-general" ocs_live_batch=no ocs_repository="nfs4://${server_ip}/partimag/" net.ifnames=0 nosplash noprompt fetch=http://${server_ip}${nfs_path}/filesystem.squashfs
+boot || read void
