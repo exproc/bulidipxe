@@ -202,8 +202,8 @@ choose --timeout ${submenu-timeout} --default ${submenu-default} selected && got
 set server_ip ${next-server}
 set nfs_path /boot/clonezilla-live-3.1.3-21
 set nfs-server          ${next-server}
-set dist-root ${nfs-linux-live}/clonezilla-live-3.1.3-21
-kernel nfs://${server_ip}${nfs_path}/vmlinuz || read void
+set dist-root ${nfs-linux-live}/clonezilla-live-3.1.3-21 
+kernel nfs://${server_ip}${nfs_path}/vmlinuz || read void 
 initrd nfs://${server_ip}${nfs_path}/initrd || read void 
 imgargs vmlinuz initrd=initrd nfsroot=${server_ip}${nfs_path} netboot=nfs boot=live username=user union=overlay config components noswap edd=on nomodeset ocs_live_run="ocs-live-general" ocs_live_batch=no ocs_repository="nfs4://${server_ip}/partimag/" net.ifnames=0 nosplash noprompt
 boot
@@ -214,7 +214,8 @@ set server_ip ${next-server}
 set nfs_path /clonezilla
 kernel nfs://${server_ip}${nfs_path}/vmlinuz || read void
 initrd nfs://${server_ip}${nfs_path}/initrd || read void 
-imgargs vmlinuz boot=live username=user union=overlay config components noswap edd=on nomodeset ocs_live_run="ocs-live-general" ocs_live_batch=no ocs_repository="nfs4://${server_ip}/partimag/" net.ifnames=0 nosplash noprompt fetch=nfs://${server_ip}${nfs_path}/filesystem.squashfs
+imgargs vmlinuz initrd=initrd  boot=live   nfsroot=${server_ip}${nfs_path} netboot=nfs username=user union=overlay config components noswap edd=on nomodeset ocs_live_run="ocs-live-general" ocs_live_batch=no ocs_repository="nfs4://${server_ip}/partimag/" net.ifnames=0 nosplash noprompt 
+#fetch=nfs://${server_ip}${nfs_path}/filesystem.squashfs
 boot || read void
 
 
