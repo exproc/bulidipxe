@@ -195,12 +195,10 @@ choose --timeout ${submenu-timeout} --default ${submenu-default} selected && got
 
 :clonzilla
 set server_ip ${next-server}
-set nfs_path /data/clonezilla-live
-kernel http://${server_ip}${nfs_path}/live/vmlinuz || read void
-initrd http://${server_ip}${nfs_path}/live/initrd.img || read void
-#imgargs vmlinuz  boot=live union=overlay username=user config components quiet noswap edd=on nomodeset enforcing=0 locales= keyboard-layouts= ocs_live_run="ocs-live-general" ocs_live_extra_param="" ocs_live_batch="no" vga=785 ip= net.ifnames=0  splash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 netboot=nfs nfsroot=${server_ip}:${nfs_path}   || read void
-#imgargs vmlinuz nitrd=initrd.img boot=live union=overlay username=user config components  loglevel=0 noswap edd=on nomodeset enforcing=0 noeject locales= keyboard-layouts= ocs_live_run="ocs-live-general" ocs_live_extra_param="" ocs_live_batch="no" vga=788 ip= net.ifnames=0  nosplash i915.blacklist=yes radeonhd.blacklist=yes nouveau.blacklist=yes vmwgfx.enable_fbdev=1 fetch=http://${server_ip}${nfs_path}/filesystem.squashfs  || read void
-imgargs initrd=initrd.img  boot=live username=user union=overlay components noswap noprompt vga=788 keyboard-layouts=us locales=en_US.UTF-8 netboot=nfs nfsroot=${server_ip}:${nfs_path}
+set nfs_path /clonezilla
+kernel nfs://${server_ip}${nfs_path}/vmlinuz || read void
+initrd nfs://${server_ip}${nfs_path}/initrd || read void 
+imgargs vmlinuz boot=live username=user union=overlay config components noswap edd=on nomodeset ocs_live_run="ocs-live-general" ocs_live_batch=no ocs_repository="nfs4://${server_ip}/partimag/" net.ifnames=0 nosplash noprompt fetch=nfs://${server_ip}${nfs_path}/filesystem.squashfs
 boot || read void
 
 
