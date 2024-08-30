@@ -209,6 +209,5 @@ set server_ip ${next-server}
 set nfs_path /data/clonezilla
 kernel http://${server_ip}${nfs_path}/vmlinuz || read void
 initrd http://${server_ip}${nfs_path}/initrd || read void 
-imgargs vmlinuz boot=live username=user union=overlay config components noswap edd=on nomodeset ocs_live_run="ocs-live-general" ocs_live_batch=no ocs_repository="nfs4://${server_ip}/partimag/" net.ifnames=0 nosplash noprompt netboot=nfs nfsroot=${server_ip}:/clonezilla
-#imgargs vmlinuz boot=live username=user union=overlay config components noswap edd=on nomodeset ocs_live_run="ocs-live-general" ocs_live_batch=no ocs_repository="nfs4://${server_ip}/partimag/" net.ifnames=0 nosplash noprompt fetch=http://${server_ip}${nfs_path}/filesystem.squashfs
+imgargs vmlinuz boot=live username=user union=overlay config components noswap edd=on nomodeset ocs_live_run="ocs-live-general" ocs_live_batch=no ocs_repository="nfs4://${server_ip}/partimag/" net.ifnames=0 nosplash noprompt fetch=http://${server_ip}${nfs_path}/filesystem.squashfs
 boot || read void
