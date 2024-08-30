@@ -2,10 +2,7 @@
 dhcp
 
 
-set nfs-server          ${next-server}
-set nfs-mountpt         /boot
-set nfs-linux-live      nfs://${nfs-server}${nfs-mountpt}
-set nfs-linux-boot      ${nfs-server}:${nfs-mountpt}
+
 
 # Variables are specified in boot.ipxe.cfg
 
@@ -202,10 +199,13 @@ choose --timeout ${submenu-timeout} --default ${submenu-default} selected && got
 
 
 :ubuntu1804_live
+set server_ip ${next-server}
+set nfs_path /boot/clonezilla-live-3.1.3-21
+set nfs-server          ${next-server}
 set dist-root ${nfs-linux-live}/clonezilla-live-3.1.3-21
-kernel nfs://${dist-root}/live/vmlinuz
-initrd nfs://${dist-root}/live/initrd
-imgargs vmlinuz initrd=initrd nfsroot=${nfs-linux-boot}/clonezilla-live-3.1.3-21 netboot=nfs boot=live username=user union=overlay config components noswap edd=on nomodeset ocs_live_run="ocs-live-general" ocs_live_batch=no ocs_repository="nfs4://${server_ip}/partimag/" net.ifnames=0 nosplash noprompt
+kernel nfs://${server_ip}${nfs_path}/vmlinuz || read void
+initrd nfs://${server_ip}${nfs_path}/initrd || read void 
+imgargs vmlinuz initrd=initrd nfsroot=${server_ip}${nfs_path} netboot=nfs boot=live username=user union=overlay config components noswap edd=on nomodeset ocs_live_run="ocs-live-general" ocs_live_batch=no ocs_repository="nfs4://${server_ip}/partimag/" net.ifnames=0 nosplash noprompt
 boot
 
 
