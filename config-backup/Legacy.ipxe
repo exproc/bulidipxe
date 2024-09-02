@@ -150,7 +150,7 @@ choose --timeout ${submenu-timeout} --default ${submenu-default} selected && got
 ###################### Redo BackupMENU ################################
 
 :menu-redobackup
-
+console --x 800 --y 600 --picture http://${next-server}/data/background/redobackup.png
 menu ReDobackup
 
 item
