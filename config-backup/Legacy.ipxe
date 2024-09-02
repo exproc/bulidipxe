@@ -150,7 +150,7 @@ choose --timeout ${submenu-timeout} --default ${submenu-default} selected && got
 ###################### Redo BackupMENU ################################
 
 :menu-redobackup
-console --x 800 --y 600 --picture http://${next-server}/data/background/redobackup.png
+
 menu ReDobackup
 
 item
@@ -159,3 +159,87 @@ iseq ${menu-default} menu-recovery && isset ${submenu-default} && goto menu-reco
 choose selected && goto ${selected} || goto start
 :menu-recovery-timed
 choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+
+
+
+###################### DIAGNOSTICS MENU #############################
+
+:menu-diag
+menu Diagnostic tools
+
+item --key 0x08 back Back to top menu...
+iseq ${menu-default} menu-diag && isset ${submenu-default} && goto menu-diag-timed ||
+choose selected && goto ${selected} || goto start
+:menu-diag-timed
+choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+############################ INSTALLER MENU #########################
+
+:menu-install
+menu Installers 
+
+item popos20     Install Pop Os 20
+
+
+
+item --key 0x08 back      Back to top menu...
+iseq ${menu-default} menu-install && isset ${submenu-default} && goto menu-install-timed ||
+choose selected && goto ${selected} || goto start
+:menu-install-timed
+choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+:popos20
+set server_ip ${next-server}
+set nfs_path /srv/nfs/popos20
+kernel nfs://${server_ip}${nfs_path}/casper/vmlinuz.efi || read void
+initrd nfs://${server_ip}${nfs_path}/casper/initrd.gz || read void
+imgargs vmlinuz.efi initrd=initrd.lz root=/dev/nfs boot=casper netboot=nfs nfsroot=${server_ip}:${nfs_path} ip=dhcp hostname=pop-os username=pop-os noprompt  --- || read void
+boot || read void
+
+
+###################### LIVE ENVIRONMENT MENU ########################
+
+:menu-live
+menu Live environments 
+
+item clonzilla     Clonezilla live (Default settings, VGA 800x600)
+item clonzilla2     Clonezilla2
+item :ubuntu1804_live     Clonezilla live (in boot folder)
+
+item --key 0x08 back      Back to top menu...
+iseq ${menu-default} menu-live && isset ${submenu-default} && goto menu-live-timed ||
+choose selected && goto ${selected} || goto start
+:menu-live-timed
+choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+
+:ubuntu1804_live
+set server_ip ${next-server}
+set nfs_path /boot/clonezilla-live-3.1.3-21
+set nfs-server          ${next-server}
+set dist-root ${nfs-linux-live}/clonezilla-live-3.1.3-21 
+kernel nfs://${server_ip}${nfs_path}/vmlinuz || read void 
+initrd nfs://${server_ip}${nfs_path}/initrd || read void 
+imgargs vmlinuz initrd=initrd nfsroot=${server_ip}${nfs_path} netboot=nfs boot=live username=user union=overlay config components noswap edd=on nomodeset ocs_live_run="ocs-live-general" ocs_live_batch=no ocs_repository="nfs4://${server_ip}/partimag/" net.ifnames=0 nosplash noprompt
+boot
+
+
+:clonzilla
+set server_ip ${next-server}
+set nfs_path /clonezilla
+kernel nfs://${server_ip}${nfs_path}/vmlinuz || read void
+initrd nfs://${server_ip}${nfs_path}/initrd || read void 
+imgargs vmlinuz initrd=initrd  boot=live   nfsroot=${server_ip}${nfs_path} netboot=nfs username=user union=overlay config components noswap edd=on nomodeset ocs_live_run="ocs-live-general" ocs_live_batch=no ocs_repository="nfs4://${server_ip}/partimag/" net.ifnames=0 nosplash noprompt 
+#fetch=nfs://${server_ip}${nfs_path}/filesystem.squashfs
+boot || read void
+
+
+:clonzilla2
+set server_ip ${next-server}
+set nfs_path /data/clonezilla
+kernel http://${server_ip}${nfs_path}/vmlinuz || read void
+initrd http://${server_ip}${nfs_path}/initrd || read void 
+imgargs vmlinuz boot=live username=user union=overlay config components noswap edd=on nomodeset ocs_live_run="ocs-live-general" ocs_live_batch=no ocs_repository="nfs4://${server_ip}/partimag/" net.ifnames=0 nosplash noprompt fetch=http://${server_ip}${nfs_path}/filesystem.squashfs
+
+boot || read void
