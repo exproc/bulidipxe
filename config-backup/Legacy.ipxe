@@ -68,7 +68,7 @@ item --key l menu-live    Live environments...
 item --gap --             ------------------------- Tools and utilities ----------------------------
 item --key p pxelinux     Load PXELinux menu
 item --key r menu-recovery Recovery tools...
-
+item --key   menu-redobackup RedoBackup....
 
 item --key d menu-diag    Diagnostics tools...
 item --key i menu-install Installers...
@@ -144,6 +144,22 @@ iseq ${menu-default} menu-recovery && isset ${submenu-default} && goto menu-reco
 choose selected && goto ${selected} || goto start
 :menu-recovery-timed
 choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+
+
+###################### Redo BackupMENU ################################
+
+:menu-redobackup
+console --x 800 --y 600 --picture http://${next-server}/data/background/redobackup.png
+menu ReDobackup
+
+item
+item --key 0x08 back Back to top menu...
+iseq ${menu-default} menu-recovery && isset ${submenu-default} && goto menu-recovery-timed ||
+choose selected && goto ${selected} || goto start
+:menu-recovery-timed
+choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
 
 
 
